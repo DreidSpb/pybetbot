@@ -122,7 +122,8 @@ def process_msg(message):
 
 
 def get_bets(chat_id, subject):
-    bets = data[chat_id]['subjects'][subject].values()
+    bets = list(data[chat_id]['subjects'][subject].values())
+    bets.sort(key=lambda a: a['bet'])
     max_len = 0
     max_bet_len = 0
     for bet in bets:
