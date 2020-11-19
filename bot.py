@@ -17,6 +17,58 @@ def save_data():
     json.dump(data, data_file, ensure_ascii=False)
 
 
+@bot.message_handler(commands=["list_bets"])
+def cmd_list_bets(message):
+    admins = [x.user.id for x in bot.get_chat_administrators(message.chat.id)]
+    if message.from_user.id not in admins:
+        bot.reply_to(message, "Эта команда доступна только администраторам")
+        return
+    chat_id = str(message.chat.id)
+    if chat_id not in data.keys():
+        bot.reply_to(message, "В данном чате никто не гадает")
+    if chat_id in data.keys():
+        bot.reply_to(message , "\n".join(["Активные поводы:"] + list(data[chat_id]['subjects'])))
+
+
+@bot.message_handler(commands=["print_bet"])
+def cmd_print_bet(message):
+    admins = [x.user.id for x in bot.get_chat_administrators(message.chat.id)]
+    if message.from_user.id not in admins:
+        bot.reply_to(message, "Эта команда доступна только администраторам")
+        return
+    words = message.text.split(maxsplit=1)
+    if len(words) < 2:
+        bot.reply_to(message, "Формат команды: print_bet <имя повода>")
+        return
+    subject = words[1]
+    chat_id = str(message.chat.id)
+    if chat_id not in data.keys() or subject not in data[chat_id]['subjects']:
+        bot.reply_to(message, "Повод не найден")
+        return
+    data[chat_id]['msgs'][
+        str(bot.reply_to(message, get_bets(chat_id, subject), parse_mode="MarkdownV2").message_id)
+    ] = subject
+
+
+@bot.message_handler(commands=["stop_bet"])
+def cmd_stop_bet(message):
+    admins = [x.user.id for x in bot.get_chat_administrators(message.chat.id)]
+    if message.from_user.id not in admins:
+        bot.reply_to(message, "Эта команда доступна только администраторам")
+        return
+    words = message.text.split(maxsplit=1)
+    if len(words) < 2:
+        bot.reply_to(message, "Формат команды: stop_bet <имя повода>")
+        return
+    subject = words[1]
+    chat_id = str(message.chat.id)
+    if chat_id not in data.keys() or subject not in data[chat_id]['subjects']:
+        bot.reply_to(message, "Повод не найден")
+        return
+    del data[chat_id]['subjects'][subject]
+    bot.reply_to(message, "Повод удалён")
+
+
 @bot.message_handler(commands=["start_bet"])
 def cmd_start_bet(message):
     admins = [x.user.id for x in bot.get_chat_administrators(message.chat.id)]
