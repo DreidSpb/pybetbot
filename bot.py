@@ -66,6 +66,7 @@ def cmd_stop_bet(message):
         bot.reply_to(message, "Повод не найден")
         return
     del data[chat_id]['subjects'][subject]
+    save_data()
     bot.reply_to(message, "Повод удалён")
 
 
