@@ -96,6 +96,15 @@ def cmd_start_bet(message):
     save_data()
 
 
+@bot.message_handler(commands=["help"])
+def cmd_start_bet(message):
+    bot.reply_to(message, """list_bets - Get a list of active bets
+print_bet - Print results of specified bet
+stop_bet - Stop specified bet
+start_bet - Start new bet
+help - List of commands""")
+
+
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def process_msg(message):
     chat_id = str(message.chat.id)
