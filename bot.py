@@ -70,6 +70,34 @@ def cmd_stop_bet(message):
     bot.reply_to(message, "Повод удалён")
 
 
+@bot.message_handler(commands=["result_bet"])
+def cmd_result_bet(message):
+    admins = [x.user.id for x in bot.get_chat_administrators(message.chat.id)]
+    if message.from_user.id not in admins:
+        bot.reply_to(message, "Эта команда доступна только администраторам")
+        return
+    words = message.text.split(maxsplit=1)
+    real_result = None
+    if len(words) == 2:
+        words = words[1].split()
+        if len(words) > 1:
+            try:
+                real_result = int(words[-1])
+            except ValueError:
+                pass
+    if real_result is None:
+        bot.reply_to(message, "Формат команды: result_bet <имя повода> <итог>")
+        return
+    subject = " ".join(words[:-1])
+    chat_id = str(message.chat.id)
+    if chat_id not in data.keys() or subject not in data[chat_id]['subjects']:
+        bot.reply_to(message, "Повод не найден")
+        return
+    get_bets(chat_id, subject, real_result)
+    del data[chat_id]['subjects'][subject]
+    save_data()
+
+
 @bot.message_handler(commands=["start_bet"])
 def cmd_start_bet(message):
     admins = [x.user.id for x in bot.get_chat_administrators(message.chat.id)]
@@ -130,7 +158,7 @@ def process_msg(message):
             save_data()
 
 
-def get_bets(chat_id, subject):
+def get_bets(chat_id, subject, real_result=None):
     bets = list(data[chat_id]['subjects'][subject].values())
     bets.sort(key=lambda a: a['bet'])
     max_len = 0
@@ -140,18 +168,43 @@ def get_bets(chat_id, subject):
             max_len = len(bet['name'])
         if len(str(bet['bet'])) > max_bet_len:
             max_bet_len = len(str(bet['bet']))
-    result = "Предположения по поводу"
+    if real_result is None:
+        result = "Предположения по поводу"
+    else:
+        result = "Итоги по поводу"
     header_len = max(len(result), len(subject))
     result += "\n" + subject + "\n"
     max_len = max(header_len - 3 - max_bet_len, max_len)
     result += "=" * (max_len + max_bet_len + 3) + "\n"
+    real_printed = real_result is None
+    real_finished = real_result is None
+    winners = []
     for bet in bets:
+        if (not real_printed) and bet['bet'] >= real_result:
+            result += "-" * (max_len + max_bet_len + 3) + "\n"
+            line = "Результат"
+            line += " " * (max_len - len(line))
+            line += " - "
+            bet_s = str(real_result)
+            line += " " * (max_bet_len - len(bet_s)) + bet_s
+            result += line + "\n"
+            real_printed = True
+        if bet['bet'] == real_result:
+            winners.append(bet['name'])
         line = bet['name']
         line += " " * (max_len - len(line))
         line += " - "
         bet_s = str(bet['bet'])
         line += " " * (max_bet_len - len(bet_s)) + bet_s
         result += line + "\n"
+        if (not real_finished) and bet['bet'] > real_result:
+            result += "-" * (max_len + max_bet_len + 3) + "\n"
+            real_finished = True
+    if real_result is not None:
+        if len(winners) > 0:
+            result += "\n\nИ наши победители: {}".format(", ".join(winners))
+        else:
+            result += "\n\nНикто не угадал"
     return "```\n" + result + "```"
 
 
