@@ -66,6 +66,7 @@ def cmd_stop_bet(message):
         bot.reply_to(message, "Повод не найден")
         return
     del data[chat_id]['subjects'][subject]
+    cleanup()
     save_data()
     bot.reply_to(message, "Повод удалён")
 
@@ -95,6 +96,7 @@ def cmd_result_bet(message):
         return
     bot.reply_to(message, get_bets(chat_id, subject, real_result), parse_mode="MarkdownV2")
     del data[chat_id]['subjects'][subject]
+    cleanup()
     save_data()
 
 
@@ -209,6 +211,13 @@ def get_bets(chat_id, subject, real_result=None):
         else:
             result += "\n\nНикто не угадал"
     return "```\n" + result + "```"
+
+
+def cleanup():
+    for chat_id in data:
+        data[chat_id]["msgs"] = dict(
+            [x for x in data[chat_id]["msgs"].items() if x[1] in data[chat_id]["subjects"].keys()]
+        )
 
 
 bot.delete_webhook()
