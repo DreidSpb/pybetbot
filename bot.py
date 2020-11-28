@@ -127,9 +127,10 @@ def cmd_start_bet(message):
 @bot.message_handler(commands=["help"])
 def cmd_start_bet(message):
     bot.reply_to(message, """list_bets - Get a list of active bets
-print_bet - Print results of specified bet
-stop_bet - Stop specified bet
-start_bet - Start new bet
+print_bet <subject> - Print current bets of specified subject
+result_bet <subject> <result> - Print results and winners for specified bet, stop bet. 
+stop_bet <subject> - Stop specified bet
+start_bet <subject> - Start new bet
 help - List of commands""")
 
 
@@ -200,6 +201,8 @@ def get_bets(chat_id, subject, real_result=None):
             result += "-" * (max_len + max_bet_len + 3) + "\n"
             real_finished = True
         result += line + "\n"
+    if not real_finished:
+        result += "-" * (max_len + max_bet_len + 3) + "\n"
     if real_result is not None:
         if len(winners) > 0:
             result += "\n\nИ наши победители: {}".format(", ".join(winners))
