@@ -196,10 +196,10 @@ def get_bets(chat_id, subject, real_result=None):
         line += " - "
         bet_s = str(bet['bet'])
         line += " " * (max_bet_len - len(bet_s)) + bet_s
-        result += line + "\n"
         if (not real_finished) and bet['bet'] > real_result:
             result += "-" * (max_len + max_bet_len + 3) + "\n"
             real_finished = True
+        result += line + "\n"
     if real_result is not None:
         if len(winners) > 0:
             result += "\n\nИ наши победители: {}".format(", ".join(winners))
