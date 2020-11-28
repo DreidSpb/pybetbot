@@ -139,7 +139,7 @@ def process_msg(message):
     chat_id = str(message.chat.id)
     if message.reply_to_message is not None:
         reply_id = str(message.reply_to_message.message_id)
-        if reply_id in data[chat_id]['msgs'].keys():
+        if chat_id in data.keys() and reply_id in data[chat_id]['msgs'].keys():
             subject = data[chat_id]['msgs'][reply_id]
             words = message.text.split(maxsplit=1)
             try:
