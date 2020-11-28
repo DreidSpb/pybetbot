@@ -93,7 +93,7 @@ def cmd_result_bet(message):
     if chat_id not in data.keys() or subject not in data[chat_id]['subjects']:
         bot.reply_to(message, "Повод не найден")
         return
-    get_bets(chat_id, subject, real_result)
+    bot.reply_to(message, get_bets(chat_id, subject), parse_mode="MarkdownV2")
     del data[chat_id]['subjects'][subject]
     save_data()
 
