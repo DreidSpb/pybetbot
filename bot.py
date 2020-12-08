@@ -149,6 +149,9 @@ def process_msg(message):
             except ValueError:
                 bot.reply_to(message, "Не могу разобрать значение")
                 return
+            if bet >= config.max_bet:
+                bot.reply_to(message, "Простите, слишком большое число")
+                return
             username = message.from_user.username
             if username is None:
                 username = message.from_user.first_name
